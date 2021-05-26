@@ -1,5 +1,6 @@
 # CellularEvolutionaryAlgorithm
-Cellular evolutionary algorithm implementation. AMHE
+Cellular evolutionary algorithm implementation.
+AMHE (Algorytmy metaheurystyczne) project.
 
 
 # Installation
@@ -31,3 +32,10 @@ Cellular evolutionary algorithm implementation. AMHE
 5. Deactivate environment
 
     `deactivate`
+
+
+# CEC 2017 benchmark
+
+All CEC 2017 functions used in this project come from  `tilleyd/cec2017-py`.
+
+Source: https://github.com/tilleyd/cec2017-py
