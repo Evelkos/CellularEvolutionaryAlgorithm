@@ -35,7 +35,7 @@ class LinearNeighborhood(Neighborhood):
         """
         assert len(grid_shape) == len(idx)
 
-        result = set()
+        result = []
 
         # idx = (11, 24, 13) => position_0 = 11, position_1 = 24, etc.
         for axis, position in enumerate(idx):
@@ -45,7 +45,7 @@ class LinearNeighborhood(Neighborhood):
             for neighbor_position in range(first_neighbor_pos, last_neighbor_pos + 1):
                 neighbor_idx = list(idx)
                 neighbor_idx[axis] = neighbor_position
-                result.add(tuple(neighbor_idx))
+                result.append(tuple(neighbor_idx))
 
         return result
 
@@ -75,4 +75,4 @@ class CompactNeighborhood(Neighborhood):
 
             ranges.append(range(first_neighbor_pos, last_neighbor_pos + 1))
 
-        return set(product(*ranges))
+        return list(product(*ranges))
