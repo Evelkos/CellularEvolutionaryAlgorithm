@@ -21,13 +21,15 @@ class Grid:
     def shape(self):
         return self.grid.shape
 
-    def generate_individuals(self, boundaries):
+    def generate_individuals(self, boundaries, function):
         """Fill grid with random individuals.
 
         Split grid into discrits of equal size. Generate individual inside each discrit.
 
         Arguments:
             boundaries: todo
+            function: optimized function
+
         """
         # Compute step for each grid dimension.
         steps = [
@@ -44,8 +46,8 @@ class Grid:
                 for idx, step, min_val in zip(grid_position, steps, min_vals)
             ]
             high = [low_val + step for low_val, step in zip(low, steps)]
-
-            individual = Individual(coordinates=np.random.uniform(low=low, high=high))
+            coord = np.random.uniform(low=low, high=high)
+            individual = Individual(coordinates=coord, fitness=function(coord))
             self.set_individual(individual, grid_position)
 
     def set_individual(self, individual, grid_position):
@@ -57,6 +59,9 @@ class Grid:
 
         """
         self.grid[grid_position] = individual
+
+    def get_individual(self, grid_position):
+        return self.grid[grid_position]
 
     def get_individuals(self):
         for grid_position, individual in np.ndenumerate(self.grid):
