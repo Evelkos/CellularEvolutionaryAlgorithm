@@ -3,14 +3,21 @@ from itertools import product
 
 
 class Neighborhood(ABC):
+    def __init__(self, distance):
+        """Init neighborhood.
+        Arguments:
+            distance: max distance from the individual
+
+        """
+        self.distance = distance
+
     @abstractmethod
-    def get_neighbours(self, grid_shape, idx, distance):
+    def get_neighbours(self, grid_shape, idx):
         """Get list of neighbours' positions on the grid.
 
         Arguments:
             grid_shape: shape of the grid that we want to get individuals from
             idx: individual's position on the grid
-            distance: max distance from the individual
 
         Return:
             Set of neighbours' positions.
@@ -20,14 +27,12 @@ class Neighborhood(ABC):
 
 
 class LinearNeighborhood(Neighborhood):
-    @staticmethod
-    def get_neighbours(grid_shape, idx, distance=1):
+    def get_neighbours(self, grid_shape, idx):
         """Get list of neighbours' positions on the grid.
 
         Arguments:
             grid_shape: shape of the grid that we want to get individuals from
             idx: individual's position on the grid
-            distance: max distance from the individual
 
         Return:
             Set of neighbours' positions.
@@ -39,10 +44,10 @@ class LinearNeighborhood(Neighborhood):
 
         # idx = (11, 24, 13) => position_0 = 11, position_1 = 24, etc.
         for axis, position in enumerate(idx):
-            first_neighbor_pos = max(position - distance, 0)
-            last_neighbor_pos = min(position + distance, grid_shape[axis])
+            first_neighbor_pos = max(position - self.distance, 0)
+            last_neighbor_pos = min(position + self.distance + 1, grid_shape[axis])
 
-            for neighbor_position in range(first_neighbor_pos, last_neighbor_pos + 1):
+            for neighbor_position in range(first_neighbor_pos, last_neighbor_pos):
                 neighbor_idx = list(idx)
                 neighbor_idx[axis] = neighbor_position
                 result.append(tuple(neighbor_idx))
@@ -51,14 +56,12 @@ class LinearNeighborhood(Neighborhood):
 
 
 class CompactNeighborhood(Neighborhood):
-    @staticmethod
-    def get_neighbours(grid_shape, idx, distance=1):
+    def get_neighbours(self, grid_shape, idx):
         """Get list of neighbours' positions on the grid.
 
         Arguments:
             grid_shape: shape of the grid that we want to get individuals from
             idx: individual's position on the grid
-            distance: max distance from the individual
 
         Return:
             Set of neighbours' positions.
@@ -70,9 +73,9 @@ class CompactNeighborhood(Neighborhood):
 
         # idx = (11, 24, 13) => position_0 = 11, position_1 = 24, etc.
         for axis, position in enumerate(idx):
-            first_neighbor_pos = max(position - distance, 0)
-            last_neighbor_pos = min(position + distance, grid_shape[axis])
+            first_neighbor_pos = max(position - self.distance, 0)
+            last_neighbor_pos = min(position + self.distance + 1, grid_shape[axis])
 
-            ranges.append(range(first_neighbor_pos, last_neighbor_pos + 1))
+            ranges.append(range(first_neighbor_pos, last_neighbor_pos))
 
         return list(product(*ranges))
