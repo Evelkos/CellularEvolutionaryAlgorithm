@@ -1,7 +1,7 @@
 class Individual:
-    def __init__(self, coordinates, fitness=None):
+    def __init__(self, coordinates, fitness):
         self.coordinates = coordinates
         self.fitness = fitness
 
     def __repr__(self):
-        return str(self.coordinates)
+        return f"Individual ({self.fitness}): {self.coordinates}"
