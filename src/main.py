@@ -8,7 +8,8 @@ import cec2017.simple as simple
 import cec2017.utils as utils
 from cellular_algorithm import (CompactNeighborhood, Evolution,
                                 GaussianMutation, LinearNeighborhood,
-                                SinglePointCrossover, TournamentSelection)
+                                SinglePointCrossover, TournamentSelection,
+                                UniformCrossover)
 
 
 def my_function(x):
@@ -31,8 +32,8 @@ if __name__ == "__main__":
     random.seed(42)
 
     neighbourhood = CompactNeighborhood(distance=1)
-    selection = TournamentSelection(tournament_size=2, parents_num=2, maximize=False)
-    crossover = SinglePointCrossover
+    selection = TournamentSelection(tournament_size=2, parents_num=2)
+    crossover = UniformCrossover
     mutation = GaussianMutation(scale=1)
 
     boundaries = ((0, 10), (10, 20))
@@ -50,7 +51,7 @@ if __name__ == "__main__":
         mutation_probability=1,
         iterations=100,
     )
-    evolution.run()
+    print(evolution.run())
     # print(evolution.grid)
 
     # neighbourhood = LinearNeighborhood(distance=1)

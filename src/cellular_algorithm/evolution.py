@@ -65,16 +65,16 @@ class Evolution:
         self.best_solution = None
         self.best_solution_position = None
 
-    def get_better(self, individual_1, individual_2):
+    def get_best(self, individuals):
         if self.maximize:
-            return max([individual_1, individual_2], key=lambda x: x.fitness)
+            return max(*individuals, key=lambda x: x.fitness)
         else:
-            return min([individual_1, individual_2], key=lambda x: x.fitness)
+            return min(*individuals, key=lambda x: x.fitness)
 
     def update_best_solution(self, individual, position):
         if (
             not self.best_solution
-            or self.get_better(self.best_solution, individual) is individual
+            or self.get_best([self.best_solution, individual]) is individual
         ):
             self.best_solution = individual
             self.best_solution_position = position
@@ -96,7 +96,7 @@ class Evolution:
         )
         # TODO: optimize
         neighbours = [self.grid.get_individual(pos) for pos in neighbours_positions]
-        return self.selection.select(neighbours)
+        return self.selection.select(neighbours, self.maximize)
 
     def recombine(self, parents):
         """Crossover.
@@ -118,7 +118,7 @@ class Evolution:
         return self.mutation.mutate(new_individual)
 
     def succession(self, individual, new_individual):
-        return self.get_better(individual, new_individual)
+        return self.get_best([individual, new_individual])
 
     def run(self):
         tmp_grid = Grid(self.grid_shape, self.neighbourhood)
