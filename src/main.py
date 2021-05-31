@@ -6,10 +6,16 @@ import cec2017.basic as basic
 import cec2017.functions as functions
 import cec2017.simple as simple
 import cec2017.utils as utils
-from cellular_algorithm import (CompactNeighborhood, Evolution,
-                                GaussianMutation, LinearNeighborhood,
-                                SinglePointCrossover, TournamentSelection,
-                                UniformCrossover)
+from cellular_algorithm import (
+    CompactNeighborhood,
+    Evolution,
+    GaussianMutation,
+    LinearNeighborhood,
+    SinglePointCrossover,
+    TournamentSelection,
+    UniformCrossover,
+    RankSelection,
+)
 
 
 def my_function(x):
@@ -32,7 +38,8 @@ if __name__ == "__main__":
     random.seed(42)
 
     neighbourhood = CompactNeighborhood(distance=1)
-    selection = TournamentSelection(tournament_size=2, parents_num=2)
+    # selection = TournamentSelection(tournament_size=2, parents_num=2)
+    selection = RankSelection(fraction=2/9, min_parents=2)
     crossover = UniformCrossover
     mutation = GaussianMutation(scale=1)
 
