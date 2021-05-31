@@ -1,5 +1,6 @@
 import random
 from abc import ABC, abstractmethod
+import math
 
 
 class Selection(ABC):
@@ -38,4 +39,25 @@ class RouletteWheelSelection(Selection):
 
 
 class RankSelection(Selection):
-    ...
+    def __init__(self, fraction=None, min_parents=1):
+        """
+        Arguments:
+            fraction: float  (0, 1)
+            min_parents: minimum number of parents
+
+        """
+        assert fraction and fraction > 0 and fraction < 1
+        self.fraction = fraction
+        self.min_parents = min_parents
+
+    def select(self, individuals, maximize):
+        """
+        Arguments:
+            individuals: list of the individuals we choose from
+
+        """
+        # maximize = True => descending
+        individuals = sorted(individuals, key=lambda x: x.fitness, reverse=maximize)
+        parents_num = math.ceil(len(individuals) * self.fraction)
+        parents_num = max(parents_num, self.min_parents)
+        return individuals[:parents_num]
