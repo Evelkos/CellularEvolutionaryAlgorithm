@@ -49,4 +49,25 @@ class SinglePointCrossover(Crossover):
 
 
 class UniformCrossover(Crossover):
-    ...
+    @abstractmethod
+    def recombine(parent_1, parent_2):
+        """Use single point to recombine parent's coordinates and create new Individual.
+
+        Both parents need to have list of coordinates of the same length
+
+        Arguments:
+            parent_1: first parent
+            parent_2: second parent
+
+        Returns:
+            Newly created Individual
+
+        """
+        coordinates = []
+        for idx in range(len(parent_1.coordinates)):
+            if random.uniform(0, 1) < 0.5:
+                coordinates.append(parent_1.coordinates[idx])
+            else:
+                coordinates.append(parent_2.coordinates[idx])
+
+        return Individual(coordinates=np.array(coordinates), fitness=None)
