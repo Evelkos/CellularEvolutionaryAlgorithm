@@ -40,7 +40,7 @@ class Grid:
         min_vals = [min(boundary) for boundary in boundaries]
 
         # For each position on the grid, compute coresponding discrit.
-        for grid_position, _ in self.get_individuals():
+        for grid_position, _ in self.iterate_individuals():
             low = [
                 idx * step + min_val
                 for idx, step, min_val in zip(grid_position, steps, min_vals)
@@ -48,6 +48,7 @@ class Grid:
             high = [low_val + step for low_val, step in zip(low, steps)]
             coord = np.random.uniform(low=low, high=high)
             individual = Individual(coordinates=coord, fitness=function(coord))
+
             self.set_individual(individual, grid_position)
 
     def set_individual(self, individual, grid_position):
@@ -60,9 +61,12 @@ class Grid:
         """
         self.grid[grid_position] = individual
 
-    def get_individual(self, grid_position):
-        return self.grid[grid_position]
-
-    def get_individuals(self):
+    def iterate_individuals(self):
         for grid_position, individual in np.ndenumerate(self.grid):
             yield grid_position, individual
+
+    def get_individuals(self, indices):
+        return np.take(self.grid, indices).flatten()
+
+    def get_all_individuals(self):
+        return self.grid.flatten()
