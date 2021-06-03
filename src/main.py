@@ -6,16 +6,11 @@ import cec2017.basic as basic
 import cec2017.functions as functions
 import cec2017.simple as simple
 import cec2017.utils as utils
-from cellular_algorithm import (
-    CompactNeighborhood,
-    Evolution,
-    GaussianMutation,
-    LinearNeighborhood,
-    SinglePointCrossover,
-    TournamentSelection,
-    UniformCrossover,
-    RankSelection,
-)
+from cellular_algorithm import (CellularEvolutionaryAlgorithm,
+                                CompactNeighborhood, Evolution,
+                                GaussianMutation, LinearNeighborhood,
+                                RankSelection, SinglePointCrossover,
+                                TournamentSelection, UniformCrossover, EvolutionaryAlgorithm)
 
 
 def my_function(x):
@@ -38,27 +33,44 @@ if __name__ == "__main__":
     random.seed(42)
 
     neighbourhood = CompactNeighborhood(distance=1)
-    # selection = TournamentSelection(tournament_size=2, parents_num=2)
-    selection = RankSelection(fraction=2/9, min_parents=2)
+    selection = TournamentSelection(tournament_size=2, parents_num=2)
+    # selection = RankSelection(number=2)
     crossover = UniformCrossover
     mutation = GaussianMutation(scale=1)
 
     boundaries = ((0, 10), (10, 20))
     shape = (10, 10)
-    evolution = Evolution(
-        neighbourhood=neighbourhood,
+    # evolution = CellularEvolutionaryAlgorithm(
+    #     neighbourhood=neighbourhood,
+    #     crossover=crossover,
+    #     mutation=mutation,
+    #     selection=selection,
+    #     boundaries=boundaries,
+    #     function=my_function,
+    #     maximize=False,
+    #     shape=shape,
+    #     grid=None,
+    #     mutation_probability=1,
+    #     iterations=100,
+    # )
+    # print(evolution.run())
+
+
+    selection = TournamentSelection(tournament_size=3, parents_num=2)
+    evolution = EvolutionaryAlgorithm(
         crossover=crossover,
         mutation=mutation,
         selection=selection,
         boundaries=boundaries,
         function=my_function,
         maximize=False,
-        shape=shape,
-        grid=None,
         mutation_probability=1,
-        iterations=100,
+        iterations=10000,
+        population_size=1000,
     )
     print(evolution.run())
+
+
     # print(evolution.grid)
 
     # neighbourhood = LinearNeighborhood(distance=1)
