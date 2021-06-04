@@ -4,18 +4,16 @@ from cellular_algorithm import Individual
 
 
 class Grid:
-    def __init__(self, shape, neighbourhood):
+    def __init__(self, shape):
         """
         Arguments:
             shape: describes Grid's shape
-            neighbourhood: type of neighbourhood
 
         """
         self.grid = np.empty(shape, dtype=Individual)
-        self.neighbourhood = neighbourhood
 
     def __repr__(self):
-        return f"{self.grid}, {self.neighbourhood}"
+        return f"{self.grid}"
 
     @property
     def shape(self):
@@ -70,3 +68,7 @@ class Grid:
 
     def get_all_individuals(self):
         return self.grid.flatten()
+
+    def get_random_individual(self):
+        position = tuple([np.random.randint(0, high) for high in self.grid.shape])
+        return self.grid[position]
