@@ -6,11 +6,19 @@ import cec2017.basic as basic
 import cec2017.functions as functions
 import cec2017.simple as simple
 import cec2017.utils as utils
-from cellular_algorithm import (CellularEvolutionaryAlgorithm,
-                                CompactNeighborhood, Evolution,
-                                GaussianMutation, LinearNeighborhood,
-                                RankSelection, SinglePointCrossover,
-                                TournamentSelection, UniformCrossover, EvolutionaryAlgorithm)
+from cellular_algorithm import (
+    CellularEvolutionaryAlgorithm,
+    CompactNeighborhood,
+    Evolution,
+    GaussianMutation,
+    LinearNeighborhood,
+    RankSelection,
+    SinglePointCrossover,
+    TournamentSelection,
+    UniformCrossover,
+    EvolutionaryAlgorithm,
+    plot_population_on_the_surface,
+)
 
 
 def my_function(x):
@@ -51,10 +59,9 @@ if __name__ == "__main__":
     #     shape=shape,
     #     grid=None,
     #     mutation_probability=1,
-    #     iterations=100,
+    #     iterations=50,
     # )
     # print(evolution.run())
-
 
     selection = TournamentSelection(tournament_size=3, parents_num=2)
     evolution = EvolutionaryAlgorithm(
@@ -65,11 +72,11 @@ if __name__ == "__main__":
         function=my_function,
         maximize=False,
         mutation_probability=1,
-        iterations=10000,
-        population_size=1000,
+        iterations=100,
+        population_size=100,
     )
     print(evolution.run())
-
+    population_coordinates = evolution.get_population_coordinates()
 
     # print(evolution.grid)
 
@@ -87,5 +94,10 @@ if __name__ == "__main__":
     #     y = f(x)
     #     print("%s(%.1f,%.1f) = %.2f" % (f.__name__, x[0], x[1], y))
 
-    # # make a surface plot of f27
-    # utils.surface_plot(functions.f1, points=120)
+    # make a surface plot of f27
+    plot_population_on_the_surface(
+        my_function,
+        points=120,
+        population_coordinates=population_coordinates,
+        boundaries=boundaries,
+    )
