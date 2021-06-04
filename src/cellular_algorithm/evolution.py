@@ -1,10 +1,10 @@
 import random
 from abc import ABC, abstractmethod
 
+import numpy as np
 from tqdm import tqdm
 
 from cellular_algorithm import Grid
-import numpy as np
 
 
 class Evolution(ABC):
@@ -18,7 +18,8 @@ class Evolution(ABC):
         maximize=True,
         mutation_probability=1,
         iterations=100,
-        population_size=100,
+        population_shape=(1, 100),
+        population=None,
     ):
         """
         Arguments:
@@ -32,7 +33,10 @@ class Evolution(ABC):
             maximize: if function should be maximized (if not, it will be minimized)
             mutation_probability: probability of mutation
             iterations: number of iterations
-            population_size: number of individuals in the population
+            population_shape: shape of the grid
+                - (1, population_num) - for classic evolution
+                - (n_1, ..., n_x) - for cellular evolution
+            population - population
 
         """
 
@@ -46,12 +50,21 @@ class Evolution(ABC):
 
         self.mutation_probability = mutation_probability
         self.iterations = iterations
-        self.population_size = population_size
+
+        if not population and not population_shape:
+            raise ValueError("You need to specify `grid` or `shape` to create it.")
+
+        if not population:
+            population = Grid(population_shape)
+            population.generate_individuals(self.boundaries, self.function)
+
+        self.population = population
+        self.population_shape = self.population.grid.shape
+        # Create tmp grid that will be used in each iteration
+        self.offsprings = Grid(self.population_shape)
 
         self.best_solution = None
         self.best_solution_position = None
-
-        self.population = None
 
     def get_best(self, individuals):
         if self.maximize:
@@ -119,93 +132,60 @@ class Evolution(ABC):
         ...
 
     @abstractmethod
+    def run_single_iteration(self):
+        ...
+
     def run(self):
         """Run evolution."""
-        ...
+        for i in tqdm(range(self.iterations)):
+            self.run_single_iteration()
+        return self.best_solution
 
 
 class EvolutionaryAlgorithm(Evolution):
-    def __init__(
-        self,
-        crossover_probability=1,
-        population=None,
-        population_size=None,
-        *args,
-        **kwargs
-    ):
+    def __init__(self, crossover_probability=1, *args, **kwargs):
         """
         Arguments:
-            population: population of individuals
-            population_size: int, size of the population. It will be used to create
-                population of random individuals if `population` has not been given
             crossover_probability: probability of the crossover
 
         """
         super(EvolutionaryAlgorithm, self).__init__(*args, **kwargs)
-
-        if not population and not population_size:
-            raise ValueError("You need to specify `population` or `population_size`.")
-
-        if not population:
-            population = Grid((1, population_size), None)
-            population.generate_individuals(self.boundaries, self.function)
-
-        self.population = population
         self.crossover_probability = crossover_probability
 
-    def succession(self, offsprings):
+    def succession(self, population, offsprings):
         """Succession."""
         self.population = offsprings
 
-    def run(self):
-        offsprings = Grid(self.population_size, None)
+    def run_single_iteration(self):
+        for grid_position, individual in self.population.iterate_individuals():
+            # Selection and crossover
+            if random.uniform(0, 1) < self.crossover_probability:
+                parents = self.select_parents(self.population.get_all_individuals())
+                new_individual = self.recombine(parents)
+            else:
+                new_individual = self.population.get_random_individual()
+            # Mutation
+            if random.uniform(0, 1) < self.mutation_probability:
+                new_individual = self.mutate(new_individual)
+            # Normalization and fitness computation
+            new_individual = self.normalize_coordinates(new_individual)
+            new_individual.fitness = self.function(new_individual.coordinates)
 
-        for iteration in tqdm(range(self.iterations)):
-            for idx in range(self.population_size):
-                # Selection and crossover
-                if random.uniform(0, 1) < self.crossover_probability:
-                    parents = self.select_parents(self.population.get_all_individuals())
-                    new_individual = self.recombine(parents)
-                else:
-                    position = random.randint(0, self.population_size - 1)
-                    new_individual = self.population.get_individuals([position])[0]
-                # Mutation
-                if random.uniform(0, 1) < self.mutation_probability:
-                    new_individual = self.mutate(new_individual)
-                # Normalization and fitness computation
-                new_individual = self.normalize_coordinates(new_individual)
-                new_individual.fitness = self.function(new_individual.coordinates)
+            self.offsprings.set_individual(new_individual, grid_position)
+            self.update_best_solution(new_individual, grid_position)
 
-                offsprings.set_individual(new_individual, idx)
-                self.update_best_solution(new_individual, idx)
-
-            # Succession
-            self.succession(offsprings)
-
-        return self.best_solution
+        # Succession
+        self.succession(self.population, self.offsprings)
 
 
 class CellularEvolutionaryAlgorithm(Evolution):
-    def __init__(self, neighbourhood, shape=None, grid=None, *args, **kwargs):
+    def __init__(self, neighbourhood, *args, **kwargs):
         """
         Arguments:
             neighbourhood: describes type of neighbourhood
-            shape: shape of the grid.
-                eg. (10, 20, 30) => 6000 individuals
-            grid: Grid with existing individuals
 
         """
         super(CellularEvolutionaryAlgorithm, self).__init__(*args, **kwargs)
-
-        if not grid and not shape:
-            raise ValueError("You need to specify `grid` or `shape` to create it.")
-
-        if not grid:
-            grid = Grid(shape, neighbourhood)
-            grid.generate_individuals(self.boundaries, self.function)
-
-        self.population = grid
-        self.population_shape = self.population.grid.shape
         self.neighbourhood = neighbourhood
 
     def select_parents(self, grid_position):
@@ -226,7 +206,7 @@ class CellularEvolutionaryAlgorithm(Evolution):
         neighbours = self.population.get_individuals(positions)
         return super().select_parents(neighbours)
 
-    def succession(self, offsprings):
+    def succession(self, offsprings, population):
         """Succession.
 
         For each cell choose better individual.
@@ -244,27 +224,21 @@ class CellularEvolutionaryAlgorithm(Evolution):
             result = self.get_best([individual, offspring])
             self.population.set_individual(result, position)
 
-    def run(self):
-        """Run evolution."""
-        offsprings = Grid(self.population_shape, self.neighbourhood)
+    def run_single_iteration(self):
+        for grid_position, individual in self.population.iterate_individuals():
+            # Selection
+            parents = self.select_parents(grid_position)
+            # Crossover
+            new_individual = self.recombine(parents)
+            # Mutation
+            if random.uniform(0, 1) < self.mutation_probability:
+                new_individual = self.mutate(new_individual)
+            # Normalization and fitness computation
+            new_individual = self.normalize_coordinates(new_individual)
+            new_individual.fitness = self.function(new_individual.coordinates)
 
-        for i in tqdm(range(self.iterations)):
-            for grid_position, individual in self.population.iterate_individuals():
-                # Selection
-                parents = self.select_parents(grid_position)
-                # Crossover
-                new_individual = self.recombine(parents)
-                # Mutation
-                if random.uniform(0, 1) < self.mutation_probability:
-                    new_individual = self.mutate(new_individual)
-                # Normalization and fitness computation
-                new_individual = self.normalize_coordinates(new_individual)
-                new_individual.fitness = self.function(new_individual.coordinates)
+            self.offsprings.set_individual(new_individual, grid_position)
+            self.update_best_solution(new_individual, grid_position)
 
-                offsprings.set_individual(new_individual, grid_position)
-                self.update_best_solution(new_individual, grid_position)
-
-            # Succession.
-            self.succession(offsprings)
-
-        return self.best_solution
+        # Succession.
+        self.succession(self.offsprings, self.population)
