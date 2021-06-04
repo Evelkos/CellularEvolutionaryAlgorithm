@@ -10,14 +10,15 @@ from cellular_algorithm import (
     CellularEvolutionaryAlgorithm,
     CompactNeighborhood,
     Evolution,
+    EvolutionaryAlgorithm,
     GaussianMutation,
     LinearNeighborhood,
     RankSelection,
     SinglePointCrossover,
     TournamentSelection,
     UniformCrossover,
-    EvolutionaryAlgorithm,
     plot_population_on_the_surface,
+    record,
 )
 
 
@@ -35,14 +36,8 @@ def get_minimum(individual_1, individual_2):
 
 
 if __name__ == "__main__":
-    # grid = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    # result = CompactNeighborhood.get_neighbours(grid.shape, (1, 0), 1)
-    # print(result)
-    random.seed(42)
-
     neighbourhood = CompactNeighborhood(distance=1)
     selection = TournamentSelection(tournament_size=2, parents_num=2)
-    # selection = RankSelection(number=2)
     crossover = UniformCrossover
     mutation = GaussianMutation(scale=1)
 
@@ -56,10 +51,9 @@ if __name__ == "__main__":
     #     boundaries=boundaries,
     #     function=my_function,
     #     maximize=False,
-    #     shape=shape,
-    #     grid=None,
+    #     population_shape=shape,
     #     mutation_probability=1,
-    #     iterations=50,
+    #     iterations=10,
     # )
     # print(evolution.run())
 
@@ -73,31 +67,14 @@ if __name__ == "__main__":
         maximize=False,
         mutation_probability=1,
         iterations=100,
-        population_size=100,
+        population_shape=(1, 100),
     )
-    print(evolution.run())
-    population_coordinates = evolution.get_population_coordinates()
 
-    # print(evolution.grid)
+    # plot_population_on_the_surface(
+    #     my_function,
+    #     points=120,
+    #     population_coordinates=population_coordinates,
+    #     boundaries=boundaries,
+    # )
 
-    # neighbourhood = LinearNeighborhood(distance=1)
-    # grid = Grid2D(shape=[10, 10], neighbourhood=neighbourhood)
-
-    # # Accepted dimensions are 2, 10, 20, 30, 50 or 100
-    # # (f11 - f20 and f29 - f30 not defined for D = 2)
-    # D = 2
-
-    # # evaluate a specific function a few times
-    # f = functions.f5
-    # for i in range(0, 10):
-    #     x = np.random.uniform(low=-100, high=100, size=D)
-    #     y = f(x)
-    #     print("%s(%.1f,%.1f) = %.2f" % (f.__name__, x[0], x[1], y))
-
-    # make a surface plot of f27
-    plot_population_on_the_surface(
-        my_function,
-        points=120,
-        population_coordinates=population_coordinates,
-        boundaries=boundaries,
-    )
+    record(evolution)
