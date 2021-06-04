@@ -33,6 +33,9 @@ AMHE (Algorytmy metaheurystyczne) project.
 
     `deactivate`
 
+6. [Optional] Install `ffmpeg` 
+   `ffmpeg` is used to save `.mp4` files with `matplotlib`. It is still possible to
+   record evolution without `ffmpeg`, but only using `.gif` extension.
 
 # CEC 2017 benchmark
 

@@ -1,9 +1,6 @@
-import io
-
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits import mplot3d
-from PIL import Image
+from celluloid import Camera
 
 
 def plot_population_on_the_surface(
@@ -31,6 +28,8 @@ def plot_population_on_the_surface(
     # If `ax` has not been given, display the plot.
     if ax_in is None:
         plt.show()
+
+    return ax
 
 
 def plot_surface(
@@ -60,6 +59,8 @@ def plot_surface(
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
+
+    return ax
 
 
 def compute_surface(
@@ -105,33 +106,53 @@ def plot_population(ax, population_coordinates):
     X = [x for x, y, z in population_coordinates]
     Y = [y for x, y, z in population_coordinates]
     Z = [z for x, y, z in population_coordinates]
-    ax.scatter(X, Y, Z, s=1, c="black")
+    points_on_the_plot = ax.scatter(X, Y, Z, s=1, c="black")
+
+    return points_on_the_plot
 
 
-# def write_video(file_path, frames, fps):
-#     """
-#     Writes frames to an mp4 video file
-#     :param file_path: Path to output video, must end with .mp4
-#     :param frames: List of PIL.Image objects
-#     :param fps: Desired frame rate
-#     """
-
-#     w, h = frames[0].size
-#     fourcc = cv.VideoWriter_fourcc('m', 'p', '4', 'v')
-#     writer = cv.VideoWriter(file_path, fourcc, fps, (w, h))
-
-#     for frame in frames:
-#         writer.write(pil_to_cv(frame))
-
-#     writer.release()
+def __generate_frame(ax, evolution, surface, title, camera):
+    plot_surface(ax=ax, title=title, surface=surface)
+    population_coordinates = evolution.get_population_coordinates()
+    plot_population(ax, population_coordinates)
+    camera.snap()
 
 
-# def record(evolution):
-#     evolution.run()
-#     plot_buffer = io.BytesIO()
-#     plt.savefig(plot_buffer, format='png')
-#     plot_buffer.seek(0)
-#     image = Image.open(plot_buffer)
-#     image.show()
-#     # Here - record
-#     plot_buffer.close()
+def record(evolution, points=20, iteration_step=10, filename=None):
+    """Record evolution.
+
+    Displays surface and population.
+
+    Arguments:
+        evolution: evolution to run
+        points (int): The number of points to collect on each dimension. A total
+            of points^2 function evaluations will be performed
+        iteration_step: number of iterations to get next snaps
+        filename: path to the file where movie will be saved.
+            eg. .mp4 or .gif.
+            WARNING: .mp4 file requires `ffmpeg` installed!
+            If None, movie will be displayed.
+
+    """
+    function = evolution.function
+    boundaries = evolution.boundaries
+    surface = compute_surface(function, boundaries, points)
+
+    ax = plt.axes(projection="3d")
+    camera = Camera(ax.figure)
+
+    # Add first frame (evolution has not started yet)
+    __generate_frame(ax, evolution, surface, function.__name__, camera)
+
+    # Add single frame aftear each iteration
+    for iteration in evolution.step_run():
+        if iteration % iteration_step == 0:
+            __generate_frame(ax, evolution, surface, function.__name__, camera)
+
+    animation = camera.animate()
+
+    # Display or save image
+    if filename is None:
+        plt.show()
+    else:
+        animation.save(filename)
