@@ -51,6 +51,8 @@ class Evolution(ABC):
         self.best_solution = None
         self.best_solution_position = None
 
+        self.population = None
+
     def get_best(self, individuals):
         if self.maximize:
             return max(*individuals, key=lambda x: x.fitness)
@@ -105,6 +107,12 @@ class Evolution(ABC):
         """Mutation."""
         return self.mutation.mutate(new_individual)
 
+    def get_population_coordinates(self):
+        return [
+            (*individual.coordinates, individual.fitness)
+            for _, individual in self.population.iterate_individuals()
+        ]
+
     @abstractmethod
     def succession(self, current_population, offsprings):
         """Succession."""
@@ -147,19 +155,19 @@ class EvolutionaryAlgorithm(Evolution):
 
     def succession(self, offsprings):
         """Succession."""
-        self.grid = offsprings
+        self.population = offsprings
 
     def run(self):
-        offsprings = Grid(len(self.population.grid), None)
+        offsprings = Grid(self.population_size, None)
 
         for iteration in tqdm(range(self.iterations)):
-            for idx in range(len(self.population.grid)):
+            for idx in range(self.population_size):
                 # Selection and crossover
                 if random.uniform(0, 1) < self.crossover_probability:
                     parents = self.select_parents(self.population.get_all_individuals())
                     new_individual = self.recombine(parents)
                 else:
-                    position = random.randint(0, len(self.population.grid) - 1)
+                    position = random.randint(0, self.population_size - 1)
                     new_individual = self.population.get_individuals([position])[0]
                 # Mutation
                 if random.uniform(0, 1) < self.mutation_probability:
@@ -196,8 +204,8 @@ class CellularEvolutionaryAlgorithm(Evolution):
             grid = Grid(shape, neighbourhood)
             grid.generate_individuals(self.boundaries, self.function)
 
-        self.grid = grid
-        self.grid_shape = self.grid.grid.shape
+        self.population = grid
+        self.population_shape = self.population.grid.shape
         self.neighbourhood = neighbourhood
 
     def select_parents(self, grid_position):
@@ -212,8 +220,10 @@ class CellularEvolutionaryAlgorithm(Evolution):
             List of neighbours that will be used to create new individual.
 
         """
-        positions = self.neighbourhood.get_neighbours(self.grid_shape, grid_position)
-        neighbours = self.grid.get_individuals(positions)
+        positions = self.neighbourhood.get_neighbours(
+            self.population_shape, grid_position
+        )
+        neighbours = self.population.get_individuals(positions)
         return super().select_parents(neighbours)
 
     def succession(self, offsprings):
@@ -226,20 +236,20 @@ class CellularEvolutionaryAlgorithm(Evolution):
 
         """
         for individual_info, offspring_info in zip(
-            self.grid.iterate_individuals(),
+            self.population.iterate_individuals(),
             offsprings.iterate_individuals(),
         ):
             position, individual = individual_info
             _, offspring = offspring_info
             result = self.get_best([individual, offspring])
-            self.grid.set_individual(result, position)
+            self.population.set_individual(result, position)
 
     def run(self):
         """Run evolution."""
-        offsprings = Grid(self.grid_shape, self.neighbourhood)
+        offsprings = Grid(self.population_shape, self.neighbourhood)
 
         for i in tqdm(range(self.iterations)):
-            for grid_position, individual in self.grid.iterate_individuals():
+            for grid_position, individual in self.population.iterate_individuals():
                 # Selection
                 parents = self.select_parents(grid_position)
                 # Crossover
