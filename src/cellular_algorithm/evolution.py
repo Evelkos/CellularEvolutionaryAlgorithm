@@ -135,25 +135,19 @@ class Evolution(ABC):
     def run_single_iteration(self):
         ...
 
-    def run(self):
-        """Run evolution.
+    def run(self, save_trace=False):
+        """Run evolution."""
+        population_trace = None
 
-        Do not use twice or after step_run().
+        if save_trace:
+            population_trace = [self.get_population_coordinates()]
 
-        """
         for iteration in tqdm(range(self.iterations)):
             self.run_single_iteration()
-        return self.best_solution
+            if save_trace:
+                population_trace.append(self.get_population_coordinates())
 
-    def step_run(self):
-        """Run evolution but use `yield` aftear each iteration.
-
-        Do not use twice or after run().
-
-        """
-        for iteration in range(self.iterations):
-            self.run_single_iteration()
-            yield iteration
+        return population_trace
 
 
 class EvolutionaryAlgorithm(Evolution):
