@@ -13,8 +13,8 @@ from cellular_algorithm import (CellularEvolutionaryAlgorithm,
                                 SinglePointCrossover, TournamentSelection,
                                 UniformCrossover,
                                 plot_population_on_the_surface,
-                                population_fitness_plot, record, summary,
-                                summary_plots)
+                                population_fitness_plot, record, record_2d,
+                                summary, summary_plots)
 
 
 def my_function(x):
@@ -63,10 +63,10 @@ if __name__ == "__main__":
     )
 
     evolution_trace = evolution.run(save_trace=True)
-    
-    my_summary = summary(evolution_trace)
-    summary_plots(my_summary)
+
+    # my_summary = summary(evolution_trace)
+    # summary_plots(my_summary)
 
     # population_fitness_plot(evolution_trace)
 
-    # record(evolution_trace, evolution, points=20, iteration_step=10, filename=None)
+    record_2d(evolution_trace, evolution, points=20, iteration_step=10, filename=None)

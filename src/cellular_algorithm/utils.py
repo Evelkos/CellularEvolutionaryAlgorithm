@@ -119,6 +119,20 @@ def __generate_frame(ax, population_coordinates, surface, title, camera):
     camera.snap()
 
 
+def __generate_frame_2d(ax, population_coordinates, surface, title, camera, levels=40):
+    x, y, z, *_ = surface
+
+    # Plot surface (only colors)
+    ax.contourf(x, y, z, cmap="RdBu_r", levels=levels)
+
+    # Plot population 2d
+    X = [x for x, y, *z in population_coordinates]
+    Y = [y for x, y, *z in population_coordinates]
+    ax.scatter(X, Y, s=2, c="black")
+
+    camera.snap()
+
+
 def record(population_trace, evolution, points=20, iteration_step=10, filename=None):
     """Record evolution in 3d.
 
@@ -151,6 +165,52 @@ def record(population_trace, evolution, points=20, iteration_step=10, filename=N
     for iteration, population_coordinates in enumerate(population_trace):
         if iteration % iteration_step == 0:
             __generate_frame(ax, population_coordinates, surface, title, camera)
+
+    # Display or save image
+    animation = camera.animate()
+    if filename is None:
+        plt.show()
+    else:
+        animation.save(filename)
+
+
+def record_2d(
+    population_trace, evolution, points=20, iteration_step=10, filename=None, ax=None
+):
+    """Record evolution in 3d.
+
+    Displays surface and population.
+
+    Arguments:
+        population_trace: list of populations' coordinates in each iteration
+        evolution: evolution object that has been used to generate `population_trace`
+        points (int): The number of points to collect on each dimension. A total
+            of points^2 function evaluations will be performed
+        iteration_step: number of iterations to get next snap
+        filename: path to the file where movie will be saved.
+            eg. .mp4 or .gif.
+            WARNING: .mp4 file requires `ffmpeg` installed!
+            If None, movie will be displayed.
+        ax: ax
+
+    Returns:
+        list of populations' coordinates in each iteration
+
+    """
+    title = evolution.function.__name__
+
+    # Prepare empty plot and initialize Camera
+    ax__original = ax
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    camera = Camera(ax.figure)
+    surface = compute_surface(evolution.function, evolution.boundaries, points)
+
+    # Record population after given number of `iteration_step`s
+    for iteration, population_coordinates in enumerate(population_trace):
+        if iteration % iteration_step == 0:
+            __generate_frame_2d(ax, population_coordinates, surface, title, camera)
 
     # Display or save image
     animation = camera.animate()
