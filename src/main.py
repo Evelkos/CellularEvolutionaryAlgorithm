@@ -6,20 +6,14 @@ import cec2017.basic as basic
 import cec2017.functions as functions
 import cec2017.simple as simple
 import cec2017.utils as utils
-from cellular_algorithm import (
-    CellularEvolutionaryAlgorithm,
-    CompactNeighborhood,
-    Evolution,
-    EvolutionaryAlgorithm,
-    GaussianMutation,
-    LinearNeighborhood,
-    RankSelection,
-    SinglePointCrossover,
-    TournamentSelection,
-    UniformCrossover,
-    plot_population_on_the_surface,
-    record,
-)
+from cellular_algorithm import (CellularEvolutionaryAlgorithm,
+                                CompactNeighborhood, Evolution,
+                                EvolutionaryAlgorithm, GaussianMutation,
+                                LinearNeighborhood, RankSelection,
+                                SinglePointCrossover, TournamentSelection,
+                                UniformCrossover,
+                                plot_population_on_the_surface, record,
+                                summary, summary_plots)
 
 
 def my_function(x):
@@ -53,9 +47,11 @@ if __name__ == "__main__":
         maximize=False,
         population_shape=shape,
         mutation_probability=1,
-        iterations=200,
+        iterations=20,
     )
     evolution_trace = evolution.run(save_trace=True)
+    my_summary = summary(evolution_trace)
+    summary_plots(my_summary)
 
     # evolution = EvolutionaryAlgorithm(
     #     crossover=crossover,
@@ -76,4 +72,4 @@ if __name__ == "__main__":
     #     boundaries=boundaries,
     # )
 
-    record(evolution_trace, evolution, points=20, iteration_step=10, filename=None)
+    # record(evolution_trace, evolution, points=20, iteration_step=10, filename=None)

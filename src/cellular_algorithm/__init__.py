@@ -5,4 +5,9 @@ from .evolution import CellularEvolutionaryAlgorithm, Evolution, EvolutionaryAlg
 from .mutation import GaussianMutation
 from .neighborhood import CompactNeighborhood, LinearNeighborhood
 from .selection import RankSelection, TournamentSelection
-from .utils import plot_population_on_the_surface, record
+from .utils import (
+    plot_population_on_the_surface,
+    record,
+    summary,
+    summary_plots,
+)

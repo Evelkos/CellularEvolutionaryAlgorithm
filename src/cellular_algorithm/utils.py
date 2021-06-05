@@ -1,3 +1,5 @@
+import statistics
+
 import matplotlib.pyplot as plt
 import numpy as np
 from celluloid import Camera
@@ -156,3 +158,47 @@ def record(population_trace, evolution, points=20, iteration_step=10, filename=N
         plt.show()
     else:
         animation.save(filename)
+
+
+def summary(population_trace):
+    """Compute min, max and mean value for each iteration.
+
+    Arguments:
+        population_trace: list of populations' coordinates in each iteration
+
+    Return:
+        dictionary with keys:
+            - max_fitness - list of max fitnesses in each iteration
+            - min_fitness - list of min fitnesses in each iteration
+            - mean_fitness - list of mean fitnesses in each iteration
+
+    """
+    max_fitness = []
+    min_fitness = []
+    mean_fitness = []
+
+    for iteration in population_trace:
+        max_fitness.append(max(iteration, key=lambda x: x[-1])[-1])
+        min_fitness.append(min(iteration, key=lambda x: x[-1])[-1])
+        mean_fitness.append(statistics.mean(individual[-1] for individual in iteration))
+
+    return {
+        "max_fitness": max_fitness,
+        "min_fitness": min_fitness,
+        "mean_fitness": mean_fitness,
+    }
+
+
+def summary_plots(summary_dict):
+    fig, ax = plt.subplots()
+
+    x = range(len(summary_dict["max_fitness"]))
+    ax.plot(x, summary_dict["max_fitness"])
+    ax.plot(x, summary_dict["min_fitness"])
+    ax.plot(x, summary_dict["mean_fitness"])
+
+    ax.set_title("Population distribution")
+    ax.set_xlabel("iteration")
+    ax.set_ylabel("fitness")
+
+    plt.show()
