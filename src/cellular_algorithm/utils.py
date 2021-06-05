@@ -11,6 +11,8 @@ def plot_population_on_the_surface(
     points=30,
     ax=None,
     population_coordinates=None,
+    filename=None,
+    display=False,
 ):
     """Plot population and the surface.
 
@@ -24,6 +26,8 @@ def plot_population_on_the_surface(
         ax: ax. If None, plot will be displayed to the User
         population_coordinates: population that should be displayed on the surface
             If None, only surface will be displayed.
+        filename: path used to save the plot
+        display: if plot should be displayed
 
     Return:
         ax
@@ -32,7 +36,6 @@ def plot_population_on_the_surface(
     X, Y, Z = compute_surface(function, boundaries, points)
 
     # Create an empty plot
-    ax_in = ax
     ax = ax if ax is not None else plt.axes(projection="3d")
 
     plot_surface(
@@ -44,8 +47,9 @@ def plot_population_on_the_surface(
     if population_coordinates:
         plot_population(ax, population_coordinates)
 
-    # If `ax` has not been given, display the plot.
-    if ax_in is None:
+    if filename is not None:
+        plt.savefig(filename)
+    if display:
         plt.show()
 
     return ax
@@ -273,17 +277,17 @@ def summary(population_trace):
     }
 
 
-def summary_plots(summary_dict, ax=None):
+def summary_plots(summary_dict, ax=None, filename=None, display=False):
     """Plot max, min and mean fitness of the population in each iteration.
 
     Arguments:
         summary_dict: dictionary returned by summary()
         ax: ax or None
+        filename: path used to save the plot
+        display: if plot should be displayed
 
     """
-    ax__original = ax
-    if ax is None:
-        fig, ax = plt.subplots()
+    ax = ax if ax is not None else plt.subplots()[1]
 
     x = range(len(summary_dict["max_fitness"]))
 
@@ -297,23 +301,24 @@ def summary_plots(summary_dict, ax=None):
 
     ax.legend(loc="upper right")
 
-    if ax__original is None:
+    if filename is not None:
+        plt.savefig(filename)
+    if display:
         plt.show()
-    else:
-        return ax
+    return ax
 
 
-def population_fitness_plot(population_trace, ax=None):
+def population_fitness_plot(population_trace, ax=None, filename=None, display=False):
     """Plot fitnesses of all individuals in each iteration.
 
     Arguments:
         population_trace: trace of the population returned by evolution.run(save_trace=True)
         ax: ax or None
+        filename: path used to save the plot
+        display: if plot should be displayed
 
     """
-    ax__original = ax
-    if ax is None:
-        fig, ax = plt.subplots()
+    ax = ax if ax is not None else plt.subplots()[1]
 
     for iteration, population in enumerate(population_trace):
         x = [iteration for _ in range(len(population))]
@@ -324,7 +329,8 @@ def population_fitness_plot(population_trace, ax=None):
     ax.set_xlabel("iteration")
     ax.set_ylabel("fitness")
 
-    if ax__original is None:
+    if filename is not None:
+        plt.savefig(filename)
+    if display:
         plt.show()
-    else:
-        return ax
+    return ax
