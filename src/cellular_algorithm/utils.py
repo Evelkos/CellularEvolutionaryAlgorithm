@@ -12,6 +12,23 @@ def plot_population_on_the_surface(
     ax=None,
     population_coordinates=None,
 ):
+    """Plot population and the surface.
+
+    Arguments:
+        function: function that will be used to generate surface
+            It should be the same as evolution's function
+        boundaries: what part of the surface should be displayed
+            It should be the same as evolution's boundaries
+        points (int): The number of points to collect on each dimension. A total
+            of points^2 function evaluations will be performed
+        ax: ax. If None, plot will be displayed to the User
+        population_coordinates: population that should be displayed on the surface
+            If None, only surface will be displayed.
+
+    Return:
+        ax
+
+    """
     X, Y, Z = compute_surface(function, boundaries, points)
 
     # Create an empty plot
@@ -52,6 +69,10 @@ def plot_surface(
             of points^2 function evaluations will be performed.
         ax (matplotlib axes): Optional axes to use (must have projection='3d').
             Note, if specified plt.show() will not be called.
+
+    Return:
+        ax
+
     """
     # create points^2 tuples of (x,y) and populate z
     X, Y, Z = surface
@@ -65,13 +86,8 @@ def plot_surface(
     return ax
 
 
-def compute_surface(
-    function,
-    boundaries=(-100, 100),
-    points=30,
-):
-    """
-    Creates a surface plot of a function.
+def compute_surface(function, boundaries=(-100, 100), points=30):
+    """Compute surface of given function.
 
     Args:
         function (function): The objective function to be called at each point.
@@ -80,6 +96,11 @@ def compute_surface(
             0 < x < 10, 100 < y < 200, 3 < z < 15
         points (int): The number of points to collect on each dimension. A total
             of points^2 function evaluations will be performed.
+
+    Return:
+        Lists X (x coordinates), Y (y coordinates), Z (z coordinates) that defines
+        surface.
+
     """
     # create points^2 tuples of (x,y) and populate z
     xys = np.array(
@@ -105,6 +126,13 @@ def compute_surface(
 
 
 def plot_population(ax, population_coordinates):
+    """Plot 3D population.
+
+    Arguments:
+        ax: ax
+        population_coordinates: coordinates of the population
+
+    """
     X = [x for x, y, z in population_coordinates]
     Y = [y for x, y, z in population_coordinates]
     Z = [z for x, y, z in population_coordinates]
@@ -113,13 +141,33 @@ def plot_population(ax, population_coordinates):
     return points_on_the_plot
 
 
-def __generate_frame(ax, population_coordinates, surface, title, camera):
+def __generate_frame_3d(ax, population_coordinates, surface, title, camera):
+    """Generate 3D frame. Take snap.
+
+    Arguments:
+        ax: ax
+        population_coordinates: population's coordinates from given iteration
+        surface: surface returned by compute_surface()
+        title: title of a plot
+        camera: celluloid's Camera object
+    """
     plot_surface(ax=ax, title=title, surface=surface)
     plot_population(ax, population_coordinates)
     camera.snap()
 
 
 def __generate_frame_2d(ax, population_coordinates, surface, title, camera, levels=40):
+    """Generate 2D frame. Take snap.
+
+    Arguments:
+        ax: ax
+        population_coordinates: population's coordinates from given iteration
+        surface: surface returned by compute_surface()
+        title: this argument will be ignored
+        camera: celluloid's Camera object
+        levels: "depth" of the image
+
+    """
     x, y, z, *_ = surface
 
     # Plot surface (only colors)
@@ -133,49 +181,15 @@ def __generate_frame_2d(ax, population_coordinates, surface, title, camera, leve
     camera.snap()
 
 
-def record(population_trace, evolution, points=20, iteration_step=10, filename=None):
-    """Record evolution in 3d.
-
-    Displays surface and population.
-
-    Arguments:
-        population_trace: list of populations' coordinates in each iteration
-        evolution: evolution object that has been used to generate `population_trace`
-        points (int): The number of points to collect on each dimension. A total
-            of points^2 function evaluations will be performed
-        iteration_step: number of iterations to get next snap
-        filename: path to the file where movie will be saved.
-            eg. .mp4 or .gif.
-            WARNING: .mp4 file requires `ffmpeg` installed!
-            If None, movie will be displayed.
-
-    Returns:
-        list of populations' coordinates in each iteration
-
-    """
-    title = evolution.function.__name__
-
-    # Prepare empty plot and initialize Camera
-    ax = plt.axes(projection="3d")
-    camera = Camera(ax.figure)
-
-    surface = compute_surface(evolution.function, evolution.boundaries, points)
-
-    # Record population after given number of `iteration_step`s
-    for iteration, population_coordinates in enumerate(population_trace):
-        if iteration % iteration_step == 0:
-            __generate_frame(ax, population_coordinates, surface, title, camera)
-
-    # Display or save image
-    animation = camera.animate()
-    if filename is None:
-        plt.show()
-    else:
-        animation.save(filename)
-
-
-def record_2d(
-    population_trace, evolution, points=20, iteration_step=10, filename=None, ax=None
+def record(
+    population_trace,
+    evolution,
+    points=20,
+    iteration_step=10,
+    filename=None,
+    mode="2D",
+    ax=None,
+    display=False,
 ):
     """Record evolution in 3d.
 
@@ -191,18 +205,27 @@ def record_2d(
             eg. .mp4 or .gif.
             WARNING: .mp4 file requires `ffmpeg` installed!
             If None, movie will be displayed.
+        mode: "2D" or "3D"
         ax: ax
+        display: if animation should be displayed
 
     Returns:
         list of populations' coordinates in each iteration
 
     """
-    title = evolution.function.__name__
+    if mode not in {"2D", "3D"}:
+        raise ValueError("Only 2D and 3D modes are allowed")
 
-    # Prepare empty plot and initialize Camera
-    ax__original = ax
-    if ax is None:
-        fig, ax = plt.subplots()
+    # Prepare empty plot, choose frame generator
+    if mode == "3D":
+        ax = ax if ax is not None else plt.axes(projection="3d")
+        generate_frame = __generate_frame_3d
+    elif mode == "2D":
+        ax = ax if ax is not None else plt.subplots()[1]
+        generate_frame = __generate_frame_2d
+
+    title = evolution.function.__name__
+    ax.set_title(title)
 
     camera = Camera(ax.figure)
     surface = compute_surface(evolution.function, evolution.boundaries, points)
@@ -210,13 +233,14 @@ def record_2d(
     # Record population after given number of `iteration_step`s
     for iteration, population_coordinates in enumerate(population_trace):
         if iteration % iteration_step == 0:
-            __generate_frame_2d(ax, population_coordinates, surface, title, camera)
+            generate_frame(ax, population_coordinates, surface, title, camera)
 
     # Display or save image
     animation = camera.animate()
-    if filename is None:
+
+    if display:
         plt.show()
-    else:
+    if filename is not None:
         animation.save(filename)
 
 
