@@ -37,6 +37,15 @@ AMHE (Algorytmy metaheurystyczne) project.
    `ffmpeg` is used to save `.mp4` files with `matplotlib`. It is still possible to
    record evolution without `ffmpeg`, but only using `.gif` extension.
 
+# Functionality
+- train CellularEvolutionaryAlgorithm or EvolutionaryAlgorithm
+- analyse min, max and mean fitness values from each iteration
+- analyse fitness values across the entire population (in different iterations)
+- record evolution in 2D or 3D
+
+# Example
+See `src/example.py` to see how to use `cellular_algorithm`
+
 # CEC 2017 benchmark
 
 All CEC 2017 functions used in this project come from  `tilleyd/cec2017-py`.
