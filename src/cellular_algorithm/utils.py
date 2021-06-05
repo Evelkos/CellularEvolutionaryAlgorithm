@@ -193,12 +193,15 @@ def summary_plots(summary_dict):
     fig, ax = plt.subplots()
 
     x = range(len(summary_dict["max_fitness"]))
-    ax.plot(x, summary_dict["max_fitness"])
-    ax.plot(x, summary_dict["min_fitness"])
-    ax.plot(x, summary_dict["mean_fitness"])
+
+    max_fitness = ax.plot(x, summary_dict["max_fitness"], label="max fitness")
+    min_fitness = ax.plot(x, summary_dict["min_fitness"], label="min fitness")
+    mean_fitness = ax.plot(x, summary_dict["mean_fitness"], label="mean fitness")
 
     ax.set_title("Population distribution")
     ax.set_xlabel("iteration")
     ax.set_ylabel("fitness")
+
+    plt.legend(loc="upper right")
 
     plt.show()
