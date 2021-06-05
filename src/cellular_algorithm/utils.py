@@ -120,7 +120,7 @@ def __generate_frame(ax, population_coordinates, surface, title, camera):
 
 
 def record(population_trace, evolution, points=20, iteration_step=10, filename=None):
-    """Record evolution.
+    """Record evolution in 3d.
 
     Displays surface and population.
 
@@ -189,19 +189,58 @@ def summary(population_trace):
     }
 
 
-def summary_plots(summary_dict):
-    fig, ax = plt.subplots()
+def summary_plots(summary_dict, ax=None):
+    """Plot max, min and mean fitness of the population in each iteration.
+
+    Arguments:
+        summary_dict: dictionary returned by summary()
+        ax: ax or None
+
+    """
+    ax__original = ax
+    if ax is None:
+        fig, ax = plt.subplots()
 
     x = range(len(summary_dict["max_fitness"]))
 
-    max_fitness = ax.plot(x, summary_dict["max_fitness"], label="max fitness")
-    min_fitness = ax.plot(x, summary_dict["min_fitness"], label="min fitness")
-    mean_fitness = ax.plot(x, summary_dict["mean_fitness"], label="mean fitness")
+    ax.plot(x, summary_dict["max_fitness"], label="max fitness")
+    ax.plot(x, summary_dict["min_fitness"], label="min fitness")
+    ax.plot(x, summary_dict["mean_fitness"], label="mean fitness")
 
     ax.set_title("Population distribution")
     ax.set_xlabel("iteration")
     ax.set_ylabel("fitness")
 
-    plt.legend(loc="upper right")
+    ax.legend(loc="upper right")
 
-    plt.show()
+    if ax__original is None:
+        plt.show()
+    else:
+        return ax
+
+
+def population_fitness_plot(population_trace, ax=None):
+    """Plot fitnesses of all individuals in each iteration.
+
+    Arguments:
+        population_trace: trace of the population returned by evolution.run(save_trace=True)
+        ax: ax or None
+
+    """
+    ax__original = ax
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    for iteration, population in enumerate(population_trace):
+        x = [iteration for _ in range(len(population))]
+        y = [individual[-1] for individual in population]
+        ax.scatter(x, y, s=1, c="black")
+
+    ax.set_title("Population fitness distribution")
+    ax.set_xlabel("iteration")
+    ax.set_ylabel("fitness")
+
+    if ax__original is None:
+        plt.show()
+    else:
+        return ax

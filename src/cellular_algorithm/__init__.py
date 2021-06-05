@@ -10,4 +10,5 @@ from .utils import (
     record,
     summary,
     summary_plots,
+    population_fitness_plot,
 )

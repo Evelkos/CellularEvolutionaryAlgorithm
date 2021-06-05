@@ -12,8 +12,9 @@ from cellular_algorithm import (CellularEvolutionaryAlgorithm,
                                 LinearNeighborhood, RankSelection,
                                 SinglePointCrossover, TournamentSelection,
                                 UniformCrossover,
-                                plot_population_on_the_surface, record,
-                                summary, summary_plots)
+                                plot_population_on_the_surface,
+                                population_fitness_plot, record, summary,
+                                summary_plots)
 
 
 def my_function(x):
@@ -33,43 +34,39 @@ if __name__ == "__main__":
     neighbourhood = CompactNeighborhood(distance=2)
     selection = TournamentSelection(tournament_size=2, parents_num=2)
     crossover = UniformCrossover
-    mutation = GaussianMutation(scale=2)
+    mutation = GaussianMutation(scale=6)
 
     boundaries = ((-100, 100), (-100, 100))
-    shape = (20, 20)
-    evolution = CellularEvolutionaryAlgorithm(
-        neighbourhood=neighbourhood,
-        crossover=crossover,
-        mutation=mutation,
-        selection=selection,
-        boundaries=boundaries,
-        function=functions.f6,
-        maximize=False,
-        population_shape=shape,
-        mutation_probability=1,
-        iterations=20,
-    )
-    evolution_trace = evolution.run(save_trace=True)
-    my_summary = summary(evolution_trace)
-    summary_plots(my_summary)
-
-    # evolution = EvolutionaryAlgorithm(
+    shape = (10, 10)
+    # evolution = CellularEvolutionaryAlgorithm(
+    #     neighbourhood=neighbourhood,
     #     crossover=crossover,
     #     mutation=mutation,
     #     selection=selection,
     #     boundaries=boundaries,
-    #     function=functions.f5,
+    #     function=functions.f6,
     #     maximize=False,
+    #     population_shape=shape,
     #     mutation_probability=1,
     #     iterations=200,
-    #     population_shape=(1, 100),
     # )
+    evolution = EvolutionaryAlgorithm(
+        crossover=crossover,
+        mutation=mutation,
+        selection=selection,
+        boundaries=boundaries,
+        function=functions.f5,
+        maximize=False,
+        mutation_probability=1,
+        iterations=200,
+        population_shape=(1, 100),
+    )
 
-    # plot_population_on_the_surface(
-    #     functions.f5,
-    #     points=120,
-    #     population_coordinates=None,
-    #     boundaries=boundaries,
-    # )
+    evolution_trace = evolution.run(save_trace=True)
+    
+    my_summary = summary(evolution_trace)
+    summary_plots(my_summary)
+
+    # population_fitness_plot(evolution_trace)
 
     # record(evolution_trace, evolution, points=20, iteration_step=10, filename=None)
