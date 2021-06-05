@@ -18,6 +18,7 @@ class Evolution(ABC):
         maximize=True,
         mutation_probability=1,
         iterations=100,
+        parents_num=2,
         population_shape=(1, 100),
         population=None,
     ):
@@ -33,6 +34,7 @@ class Evolution(ABC):
             maximize: if function should be maximized (if not, it will be minimized)
             mutation_probability: probability of mutation
             iterations: number of iterations
+            parents_num: number of parents that will be used to create new individual
             population_shape: shape of the grid
                 - (1, population_num) - for classic evolution
                 - (n_1, ..., n_x) - for cellular evolution
@@ -50,6 +52,7 @@ class Evolution(ABC):
 
         self.mutation_probability = mutation_probability
         self.iterations = iterations
+        self.parents_num = parents_num
 
         if not population and not population_shape:
             raise ValueError("You need to specify `grid` or `shape` to create it.")
@@ -88,7 +91,7 @@ class Evolution(ABC):
                 parents from.
 
         """
-        return self.selection.select(individuals, self.maximize)
+        return self.selection.select(individuals, self.maximize, num=self.parents_num)
 
     def recombine(self, parents):
         """Crossover.

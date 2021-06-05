@@ -33,7 +33,7 @@ def my_function(x):
 
 if __name__ == "__main__":
     neighbourhood = CompactNeighborhood(distance=2)
-    selection = TournamentSelection(tournament_size=2, parents_num=2)
+    selection = TournamentSelection(tournament_size=2)
     crossover = UniformCrossover
     mutation = GaussianMutation(scale=6)
 
