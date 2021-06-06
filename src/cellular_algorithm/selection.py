@@ -36,7 +36,42 @@ class TournamentSelection(Selection):
 
 
 class RouletteWheelSelection(Selection):
-    ...
+    def select(self, individuals, maximize, num):
+        """Roulette wheel selection.
+
+        Can be used with maximize=True only.
+
+        Arguments:
+            individuals: list of the individuals we choose from
+            maximize: if fitness should be maximized or not (minimized).
+                WARNING: It has to be True.
+            num: number of individuals that should be returned. If `fraction` has been
+                given, it will be used instead of `num`
+
+        """
+        if not maximize:
+            raise ValueError("RouletteWheel cannot be used with minimalization")
+
+        fitness_sum = sum([individual.fitness for individual in individuals])
+
+        roulette = [individual.fitness / fitness_sum for individual in individuals]
+
+        result = []
+        # Draw `num` individuals
+        for required_length in range(num):
+            drawn = random.uniform(0, 1)
+            proba_sum = 0
+            # Add single individual
+            for idx, proba in enumerate(roulette):
+                proba_sum += proba
+                if proba_sum >= drawn:
+                    result.append(individuals[idx])
+                    break
+            # If individual has not been added yet, add last item from individuals list
+            if len(result) < required_length:
+                result.append(individuals[-1])
+
+        return result
 
 
 class RankSelection(Selection):

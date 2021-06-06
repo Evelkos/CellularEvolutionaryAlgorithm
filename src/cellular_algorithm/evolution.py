@@ -13,6 +13,7 @@ class Evolution(ABC):
         crossover,
         mutation,
         selection,
+        succession,
         boundaries,
         function,
         maximize=True,
@@ -27,6 +28,7 @@ class Evolution(ABC):
             crossover: crossover that will be used to create new individuals
             mutation: type of mutation that will be used to modify new individuals
             selection: type of mutation
+            succession: type of succession
             boundaries: describes range of possible solutions
                 eg. ((0, 10), (100, 200), (3, 15)) =>
                 0 < x < 10, 100 < y < 200, 3 < z < 15
@@ -44,6 +46,7 @@ class Evolution(ABC):
 
         self.crossover = crossover
         self.selection = selection
+        self.succession = succession
         self.mutation = mutation
 
         self.boundaries = boundaries
@@ -130,7 +133,7 @@ class Evolution(ABC):
         ]
 
     @abstractmethod
-    def succession(self, current_population, offsprings):
+    def choose_next_population(self):
         """Succession."""
         ...
 
@@ -163,9 +166,16 @@ class EvolutionaryAlgorithm(Evolution):
         super(EvolutionaryAlgorithm, self).__init__(*args, **kwargs)
         self.crossover_probability = crossover_probability
 
-    def succession(self, population, offsprings):
+    def choose_next_population(self):
         """Succession."""
-        self.population = offsprings
+        current_population = self.population.get_all_individuals()
+        next_population = self.succession.select(
+            current_population,
+            self.offsprings.get_all_individuals(),
+            self.maximize,
+            len(current_population),
+        )
+        self.population.grid = np.reshape(next_population, self.population_shape)
 
     def run_single_iteration(self):
         for grid_position, individual in self.population.iterate_individuals():
@@ -186,7 +196,7 @@ class EvolutionaryAlgorithm(Evolution):
             self.update_best_solution(new_individual, grid_position)
 
         # Succession
-        self.succession(self.population, self.offsprings)
+        self.choose_next_population()
 
 
 class CellularEvolutionaryAlgorithm(Evolution):
@@ -217,7 +227,7 @@ class CellularEvolutionaryAlgorithm(Evolution):
         neighbours = self.population.get_individuals(positions)
         return super().select_parents(neighbours)
 
-    def succession(self, offsprings, population):
+    def choose_next_population(self):
         """Succession.
 
         For each cell choose better individual.
@@ -228,12 +238,15 @@ class CellularEvolutionaryAlgorithm(Evolution):
         """
         for individual_info, offspring_info in zip(
             self.population.iterate_individuals(),
-            offsprings.iterate_individuals(),
+            self.offsprings.iterate_individuals(),
         ):
             position, individual = individual_info
             _, offspring = offspring_info
-            result = self.get_best([individual, offspring])
-            self.population.set_individual(result, position)
+
+            result = self.succession.select(
+                np.array([individual]), np.array([offspring]), self.maximize, 1
+            )
+            self.population.set_individual(result[0], position)
 
     def run_single_iteration(self):
         for grid_position, individual in self.population.iterate_individuals():
@@ -252,4 +265,4 @@ class CellularEvolutionaryAlgorithm(Evolution):
             self.update_best_solution(new_individual, grid_position)
 
         # Succession.
-        self.succession(self.offsprings, self.population)
+        self.choose_next_population()
