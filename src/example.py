@@ -1,3 +1,6 @@
+import argparse
+import sys
+
 import numpy as np
 
 import cec2017.basic as basic
@@ -25,65 +28,89 @@ def my_function(x):
     return sm
 
 
+def get_arguments(command_args):
+    """If EvolutionaryAlgorithm or CellularEvolutionaryAlgorithm should be used."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--ea",
+        action="store_true",
+        help=(
+            "Add this flag if classic evolution should be used instead of cellular "
+            "evolution"
+        ),
+    )
+    args = parser.parse_args(command_args)
+    return args.ea
+
+
 if __name__ == "__main__":
+    ea = get_arguments(sys.argv[1:])
+
     neighbourhood = CompactNeighborhood(distance=2)
     selection = TournamentSelection(tournament_size=2)
-    # selection = RouletteWheelSelection()
     crossover = UniformCrossover
     mutation = GaussianMutation(scale=6)
-    # succession = RouletteWheelSuccession()
     succession = TournamentSuccession(tournament_size=2)
-
     # Use my_function() or one of cec2017 functions. Eg. functions.f3
     function = functions.f5
-
     # Boundaries of the function.
     boundaries = ((-100, 100), (-100, 100))
     # Shape of the grid
     shape = (10, 10)
+    iterations = 200
 
-    evolution = CellularEvolutionaryAlgorithm(
-        neighbourhood=neighbourhood,
-        crossover=crossover,
-        mutation=mutation,
-        selection=selection,
-        succession=succession,
-        boundaries=boundaries,
-        function=function,
-        maximize=False,
-        population_shape=shape,
-        mutation_probability=1,
-        iterations=200,
-    )
-    # evolution = EvolutionaryAlgorithm(
-    #     crossover=crossover,
-    #     mutation=mutation,
-    #     selection=selection,
-    #     succession=succession,
-    #     boundaries=boundaries,
-    #     function=function,
-    #     maximize=False,
-    #     mutation_probability=1,
-    #     iterations=200,
-    #     population_shape=(1, 100),
-    # )
+    if ea:
+        evolution = CellularEvolutionaryAlgorithm(
+            neighbourhood=neighbourhood,
+            crossover=crossover,
+            mutation=mutation,
+            selection=selection,
+            succession=succession,
+            boundaries=boundaries,
+            function=function,
+            maximize=False,
+            population_shape=shape,
+            mutation_probability=0.3,
+            iterations=iterations,
+        )
+    else:
+        evolution = EvolutionaryAlgorithm(
+            crossover=crossover,
+            mutation=mutation,
+            selection=selection,
+            succession=succession,
+            boundaries=boundaries,
+            function=function,
+            maximize=False,
+            mutation_probability=0.3,
+            iterations=iterations,
+            population_shape=shape,
+        )
+
     # Run evolution, save its trace.
     evolution_trace = evolution.run(save_trace=True)
 
     # Plot summary with min, max and mean fitnesses.
     my_summary = summary(evolution_trace)
     summary_plots(my_summary, filename=None, display=True)
-
     # Plot fitnesses of the individuals.
     population_fitness_plot(evolution_trace, filename=None, display=True)
-
     # Use filename with `.gif` extension if ffmpeg has not been installed.
     # Record evolution in 2D or 3D.
     record(
         evolution_trace,
         evolution,
         points=20,
-        iteration_step=10,
+        iteration_step=int(iterations / 20),  # Generate 20 frames
+        mode="2D",
+        filename=None,
+        display=True,
+    )
+    record(
+        evolution_trace,
+        evolution,
+        points=20,
+        iteration_step=int(iterations / 20),  # Generate 20 frames
         mode="3D",
         filename=None,
         display=True,
