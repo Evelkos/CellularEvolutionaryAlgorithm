@@ -52,14 +52,27 @@ if __name__ == "__main__":
     mutation = GaussianMutation(scale=6)
     succession = TournamentSuccession(tournament_size=2)
     # Use my_function() or one of cec2017 functions. Eg. functions.f3
-    function = functions.f5
+    function = functions.f6
     # Boundaries of the function.
     boundaries = ((-100, 100), (-100, 100))
     # Shape of the grid
     shape = (10, 10)
-    iterations = 200
+    iterations = 1000
 
     if ea:
+        evolution = EvolutionaryAlgorithm(
+            crossover=crossover,
+            mutation=mutation,
+            selection=selection,
+            succession=succession,
+            boundaries=boundaries,
+            function=function,
+            maximize=False,
+            mutation_probability=0.3,
+            iterations=iterations,
+            population_shape=shape,
+        )
+    else:
         evolution = CellularEvolutionaryAlgorithm(
             neighbourhood=neighbourhood,
             crossover=crossover,
@@ -73,19 +86,6 @@ if __name__ == "__main__":
             mutation_probability=0.3,
             iterations=iterations,
         )
-    else:
-        evolution = EvolutionaryAlgorithm(
-            crossover=crossover,
-            mutation=mutation,
-            selection=selection,
-            succession=succession,
-            boundaries=boundaries,
-            function=function,
-            maximize=False,
-            mutation_probability=0.3,
-            iterations=iterations,
-            population_shape=shape,
-        )
 
     # Run evolution, save its trace.
     evolution_trace = evolution.run(save_trace=True)
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     my_summary = summary(evolution_trace)
     summary_plots(my_summary, filename=None, display=True)
     # Plot fitnesses of the individuals.
-    population_fitness_plot(evolution_trace, filename=None, display=True)
+    population_fitness_plot(evolution_trace, filename=None, display=False)
     # Use filename with `.gif` extension if ffmpeg has not been installed.
     # Record evolution in 2D or 3D.
     record(
