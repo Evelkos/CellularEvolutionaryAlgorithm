@@ -2,6 +2,9 @@
 Cellular evolutionary algorithm implementation.
 AMHE (Algorytmy metaheurystyczne) project.
 
+![Alt Text](https://github.com/Evelkos/CellularEvolutionaryAlgorithm/blob/main/f10/cEA/cEA_f10_10x10_5000_evolution_2D.gif)
+![Alt Text](https://github.com/Evelkos/CellularEvolutionaryAlgorithm/blob/main/f10/cEA/cEA_f10_10x10_5000_evolution_3D.gif)
+
 
 # Installation
 1. Install basic libraries
